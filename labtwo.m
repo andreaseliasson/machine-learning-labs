@@ -1,8 +1,11 @@
 %1
 % Plot line with points from linear definition 3x + 4y + 12 = 0
-plot([0 -3], [-4, 0], 'b', 'LineWidth', 2);
+hold off;
+plot([0 -3], [-4 0], 'b', 'LineWidth', 2);
 axis([-5 5 -5 5]);
 grid on;
+
+print -depsc f2-1.eps;
 
 %Perpinducalar distance from the origin to the straight line above
 pDistance = (-12) / sqrt(3^2 + 4^2);
@@ -32,6 +35,8 @@ Y1 = Y + kron(ones(N, 1), m2);
 
 plot(X1(:, 1), X1(:, 2), 'o', Y1(:, 1), Y1(:, 2), 'mx');
 
+print -depsc f2-2.eps;
+
 %3
 % Compute the Bayes' optimal class boundary
 % Linear classifier denoted by w^t x + b <> 0
@@ -54,6 +59,8 @@ yCoord2 = slope * xCoord2 + yIntercept;
 hold on;
 % plot([xIntercept, 0], [0, yIntercept], 'b', 'LineWidth', 2);
 plot([xCoord1, xCoord2], [yCoord1, yCoord2], 'b', 'LineWidth', 2);
+
+print -depsc f2-3.eps;
 
 % 4 The Perceptron Learning Algorithm
 % X = N by 2 matrix of data
@@ -78,14 +85,22 @@ yts = yClassLabels(:, ii(N1/2+1: N1));
 w = randn(3, 1);
 
 % Error correcting learning
+eta = 0.001;
+for iter=1:500
+    j = ceil(rand * N1/2);
+    if ( ytr(j) * Xtr(j, :) * w < 0 )
+        w = w + (eta * Xtr(j, :)' * ytr(j));
+    end
+end
 
+% Performance on test data
+yhts = Xts * w;
+disp([yts' yhts]);
 
+percentageError = sum(find(yts .* yhts < 0))/N1/2;
 
+xInterceptP = -w(3, 1) / w(2, 1);
+yInterceptP = -w(3, 1) / w(1, 1);
 
-
-
-
-
-
-
-
+hold on;
+plot([xInterceptP 0], [0 yInterceptP], 'g', 'LineWidth', 2);
