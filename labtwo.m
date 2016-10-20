@@ -86,7 +86,7 @@ w = randn(3, 1);
 
 % Error correcting learning
 eta = 0.001;
-for iter=1:500
+for iter=1:5000
     j = ceil(rand * N1/2);
     if ( ytr(j) * Xtr(j, :) * w < 0 )
         w = w + (eta * Xtr(j, :)' * ytr(j));
@@ -97,7 +97,8 @@ end
 yhts = Xts * w;
 disp([yts' yhts]);
 
-percentageError = sum(find(yts .* yhts < 0))/N1/2;
+errors = size(find(yts' .* yhts < 0));
+percentageErrorRate = 100 * errors(1) / (N1/2);
 
 xInterceptP = -w(3, 1) / w(2, 1);
 yInterceptP = -w(3, 1) / w(1, 1);
