@@ -112,8 +112,14 @@ areaUnderCurve = trapz(ROC(:, 2));
 % For a suitable choice of decision threshold, compute the classification
 % accuracy
 % true negative = 100 - false positive
-trueNegative = 100 - 67.5;
-errorRate = trueNegative / 200 * 100;
+% If we pick a threshhold from the range and look at its TP and FP we can
+% get the true negative by subtracting the FP from 100
+% Our TP and TN are the ones we predicted right, so TP + TN / N will give
+% us the accuracy
+% When TP is 90 and FP is 58 we get:
+truePositive = 90;
+trueNegative = 100 - 58;
+accuracyFisher = (truePositive + trueNegative) * 100 / N;
 % Expand on this to a for loop to find the best threshold and also seperate
 % into its own function
 
@@ -138,6 +144,55 @@ ROCM = computeROC(xx1M, xx2M, p1M, p2M, N);
 
 % Area under the ROC curve for the means direction
 areaUnderCurveForMeansDirection = trapz(ROCM(:, 2));
+
+% ----------------------- 9 ------------------------------------
+
+% Implement a nearest neighbor classifier (1-NN) on this data, and compute
+% its accuracy with that of the Fisher Discriminant Analyzer
+
+% Nearest neighbour classifier
+% (Caution: The following code is very inefficient)
+X = [X1; X2];
+N1 = size(X1, 1);
+N2 = size(X2, 1);
+
+y = [ones(N1,1); -1*ones(N2,1)];
+d = zeros(N1+N2-1,1);
+nCorrect = 0;
+
+for jtst = 1:(N1+N2)
+    % pick a point to test
+    xtst = X(jtst,:);
+    ytst = y(jtst);
+
+    % All others form the training set
+    jtr = setdiff(1:N1+N2, jtst);
+    Xtr = X(jtr,:);
+    ytr = y(jtr,1);
+
+    % Compute all distances from test to training points
+    for i=1:(N1+N2-1)
+        d(i) = norm(Xtr(i,:)-xtst);
+    end
+
+    % Which one is the closest?
+    [imin] = find(d == min(d));
+
+    % Does the nearest point have the same class label?
+    if ( ytr(imin(1)) * ytst > 0 )
+        nCorrect = nCorrect + 1;
+    else
+        disp('Incorrect classification');
+    end
+end
+
+% Percentage correst
+pCorrect = nCorrect*100/(N1+N2);
+disp(['Nearest neighbour accuracy: ' num2str(pCorrect)]);
+
+% The nearest neighbor accuracy is a bit lower than the Fisher discriminant
+% Analyzer. It would most likely be improved if extended to K-nearest neighbor.
+
 
 % ----------------- Function definitions ------------------------
 
