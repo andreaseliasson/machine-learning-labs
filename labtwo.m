@@ -103,5 +103,16 @@ percentageErrorRate = 100 * errors(1) / (N1/2);
 xInterceptP = -w(3, 1) / w(2, 1);
 yInterceptP = -w(3, 1) / w(1, 1);
 
+slopeP = (yInterceptP - 0.00) / (0.00 - xInterceptP);
+
+xCoordP1 = -3.00;
+yCoord1 = slopeP * xCoordP1 + yIntercept;
+
+xCoordP2 = 4.00;
+yCoordP2 = slopeP * xCoordP2 + yIntercept;
+
 hold on;
-plot([xInterceptP 0], [0 yInterceptP], 'g', 'LineWidth', 2);
+% plot([xInterceptP 0], [0 yInterceptP], 'g', 'LineWidth', 2);
+plot([xCoordP1 xCoordP2], [yCoord1 yCoordP2], 'g', 'LineWidth', 2);
+
+print -depsc f2-4.eps;
