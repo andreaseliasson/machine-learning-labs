@@ -53,11 +53,11 @@ yy = xx * wF(2)/wF(1);
 plot(xx,yy, 'r', 'LineWidth', 2);
 
 % randomDirection = [-0.6534; 0.1311];
-randomDirection = rand(2, 1);
-xxR = -6:0.1:6;
-yyR = xxR * randomDirection(2)/randomDirection(1);
-hold on;
-plot(xxR,yyR, 'b', 'LineWidth', 2);
+% randomDirection = rand(2, 1);
+% xxR = -6:0.1:6;
+% yyR = xxR * randomDirection(2)/randomDirection(1);
+% hold on;
+% plot(xxR,yyR, 'b', 'LineWidth', 2);
 
 
 % 4
@@ -193,7 +193,44 @@ disp(['Nearest neighbour accuracy: ' num2str(pCorrect)]);
 % The nearest neighbor accuracy is a bit lower than the Fisher discriminant
 % Analyzer. It would most likely be improved if extended to K-nearest neighbor.
 
+% -------------------------- 10 -----------------------------------
 
+% Construct a distance-to-mean classifier using Euclidian distance and
+% Mahalanbis distance as distance measures and compare their classification
+% accuracies.
+
+% We start with the algebra for the linear classifier w'x + b gt or lt 0
+w = 2 * C1^-1 * (m1 - m2);
+b = (m1' * C1^-1 * m1) - (m2' * C1^-1 * m2);
+
+% from this formula we can figure out the x and y intercepts
+xIntercept = -b / w(2, 1);
+yIntercept = -b / w(1, 1);
+
+% Slope
+slope = (yIntercept - 0.00) / (0.00 - xIntercept);
+
+% Using y = mx + b for definting new x and y points on the line
+xCoord1 = -3.00;
+yCoord1 = slope * xCoord1 + yIntercept;
+
+xCoord2 = 4.00;
+yCoord2 = slope * xCoord2 + yIntercept;
+
+figure(1);
+hold on;
+plot([xIntercept, 0], [0, yIntercept], 'g', 'LineWidth', 2);
+% plot([xCoord1, xCoord2], [yCoord1, yCoord2], 'g', 'LineWidth', 2);
+
+% Compute accuracy
+%
+correctMahalanobisDistance = 0;
+for iter=1:400
+    if ((w' * X(iter, :)' + b) * y(iter) > 0)
+        correctMahalanobisDistance = correctMahalanobisDistance + 1;
+    end
+end
+correctMahalanobisDistanceP = correctMahalanobisDistance * 100 / 400;
 % ----------------- Function definitions ------------------------
 
 function [xx1, xx2, p1, p2] = projectOntoDirection(X1, X2, direction)
