@@ -30,6 +30,7 @@ plot(m1(1), m1(2), 'b*', 'LineWidth', 4);
 contour(xRange, yRange, P2, [0.1*Pmax 0.5*Pmax 0.8*Pmax], 'LineWidth', 2);
 plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
 
+print -depsc f3-1.eps;
 
 %2
 % Draw 200 samples from each of the two distributions and plot them on the
@@ -39,9 +40,13 @@ plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
 N = 200;
 X1 = mvnrnd(m1, C1, N);
 X2 = mvnrnd(m2, C2, N);
+
+figure(1);
+hold on;
 plot(X1(:, 1), X1(:, 2), 'bx', X2(:, 1), X2(:, 2), 'ro');
 grid on;
 
+print -depsc f3-2.eps;
 
 % 3
 % Compute the Fisher Linear Discriminant direction using the means and
@@ -50,7 +55,11 @@ grid on;
 wF = inv(C1+C2)*(m1-m2);
 xx = -6:0.1:6;
 yy = xx * wF(2)/wF(1);
+figure(1);
+hold on;
 plot(xx,yy, 'r', 'LineWidth', 2);
+
+print -depsc f3-3.eps;
 
 % randomDirection = [-0.6534; 0.1311];
 % randomDirection = rand(2, 1);
@@ -79,6 +88,8 @@ subplot(212), bar(xx2, nn2);
 axis([plo phi 0 hhi])
 ylabel('Class 2', 'FontSize', 14);
 
+print -depsc f3-4.eps;
+
 
 % 5
 thmin = min([xx1 xx2]);
@@ -102,6 +113,8 @@ xlabel('False Positive', 'FontSize', 16)
 ylabel('True Positive', 'FontSize', 16);
 title('Receiver Operating Characteristic Curve', 'FontSize', 20);
 
+print -depsc f3-5.eps;
+
 
 % 6
 % Compute the area under the ROC curve
@@ -123,6 +136,17 @@ accuracyFisher = (truePositive + trueNegative) * 100 / N;
 % Expand on this to a for loop to find the best threshold and also seperate
 % into its own function
 
+accuracyFisherIter = 0;
+maxThreshold = 0;
+for thresholdIter=1:50
+    TP = ROC(thresholdIter, 2);
+    TN = 100 - ROC(thresholdIter, 1);
+    if ((TP + TN) * 100 / N > accuracyFisherIter)
+        accuracyFisherIter = (TP + TN) * 100 / N;
+        maxThreshold = thRange(thresholdIter);
+    end
+end
+
 % --------------------- 8 -----------------------------
 
 % Projecting onto a random direction
@@ -138,6 +162,7 @@ areaUnderCurveForRandomDirection = trapz(ROCF(:, 2));
 % Projecting onto the direction connecting the means of the two classes
 meansDirection = m1 - m2;
 [xx1M, xx2M, p1M, p2M] = projectOntoDirection(X1, X2, meansDirection);
+
 
 % Compute the ROC curve for the means direction
 ROCM = computeROC(xx1M, xx2M, p1M, p2M, N);
@@ -232,6 +257,20 @@ for iter=1:400
 end
 correctMahalanobisDistanceP = correctMahalanobisDistance * 100 / 400;
 
+correctEuclidianDistance = 0;
+for iter=1:400
+    if (abs(X(iter, :) - m1) < abs(X(iter, :) - m2))
+        predictY = 1;
+    else
+        predictY = -1;
+    end
+
+    if (predictY == y(iter))
+        correctEuclidianDistance = correctEuclidianDistance + 1;
+    end
+end
+correctEuclidianDistanceP = correctEuclidianDistance * 100 / 400;
+
 % ---------------------- 11 -------------------------------------
 
 % For the above classification problem, compute and plot a three
@@ -277,6 +316,7 @@ gridsize = size(ZRD);
 figure(4);
 surf(X3D, Y3D, ZRD);
 
+print -depsc f3-11.eps;
 
 % ----------------- Function definitions ------------------------
 
@@ -317,6 +357,8 @@ function ROC = computeROC(xx1, xx2, p1, p2, N)
    figure(3);
    hold on;
    plot(ROC(:, 1), ROC(:, 2), 'r', 'LineWidth', 2);
+
+   print -depsc f3-8.eps;
 end
 
 function aNumber = a()
