@@ -231,6 +231,53 @@ for iter=1:400
     end
 end
 correctMahalanobisDistanceP = correctMahalanobisDistance * 100 / 400;
+
+% ---------------------- 11 -------------------------------------
+
+% For the above classification problem, compute and plot a three
+% dimensional graph of the posterior probabilities of one of the two
+% classes for the Bayes' optimal classifier. Does the graph match your
+% expectations from theory?
+
+% Pick points in the graph and calculate their posterior probabilites.
+% These points and their values values will then be used for the 3d graph.
+
+pp1 = [4 0]';
+pp2 = [4 3]';
+pp3 = [1 1]';
+pp4 = [1 3]';
+pp5 = [-1 3]';
+pp6 = [-1 1]';
+
+pp1PP = 1 / (1 + exp(-(w'* pp1)));
+pp2PP = 1 / (1 + exp(-(w'* pp2)));
+pp3PP = 1 / (1 + exp(-(w'* pp3)));
+pp4PP = 1 / (1 + exp(-(w'* pp4)));
+pp5PP = 1 / (1 + exp(-(w'* pp5)));
+pp6PP = 1 / (1 + exp(-(w'* pp6)));
+
+% figure(1);
+% hold on;
+x3D = [pp1(1) pp2(1) pp3(1) pp4(1) pp5(1) pp6(1)];
+y3D = [pp1(2) pp2(2) pp3(2) pp4(2) pp5(2) pp6(2)];
+z3D = [pp1PP pp2PP pp3PP pp4PP pp5PP pp6PP];
+
+ZRD = zeros(13, 13);
+for i=1:13
+    for j=1:13
+        ZRD(i, j) = 1 / (1 + exp(-(w'* [i-7 j-7]')));
+    end
+end
+
+[X3D, Y3D] = meshgrid(-6:1:6, -6:1:6);
+% [X3D, Y3D] = meshgrid(x3D, y3D);
+% FZ3D = 1 / (1 + exp(-(w'* [X3D Y3D])));
+% FZ3D = 1 / (1 + exp(-());
+gridsize = size(ZRD);
+figure(4);
+surf(X3D, Y3D, ZRD);
+
+
 % ----------------- Function definitions ------------------------
 
 function [xx1, xx2, p1, p2] = projectOntoDirection(X1, X2, direction)
