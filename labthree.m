@@ -318,6 +318,36 @@ surf(X3D, Y3D, ZRD);
 
 print -depsc f3-11.eps;
 
+% ------------------------- 12 --------------------------------
+
+% What do we expect the Bayes' optimal class boundary to be if C1 and C2
+% are not identical
+% Write out the algebra, change of one covariance matrices and illustrate
+% the theoretical predictions.
+
+% We know that when we calculate the Bayes' classifier for simple densities
+% with distinct means and a common covariance matrix, we can simplify the
+% Bayes' classifier decision rule to to the linear classifer:
+
+% If we solve for w and b using two different covariance matrices we get
+% the following:
+
+C3 = 1.5 * eye(2);
+wDistinctCovariance = (C1^-1 + C3^-1) * (m1 - m2);
+bDistinctCovariance = ((m1' * C1^-1 * m2) - (m2' * C3^-1 * m2));
+
+% Calculate the accuracy for the Bayes' optimal classifier with distint
+% covariance matrices.
+correctBayesDistinctCov = 0;
+for iter=1:400
+    if ((wDistinctCovariance' * X(iter, :)' + bDistinctCovariance) * y(iter) > 0)
+        correctBayesDistinctCov = correctBayesDistinctCov + 1;
+    end
+end
+correctBayesDistinctCovP = correctBayesDistinctCov * 100 / 400;
+
+
+
 % ----------------- Function definitions ------------------------
 
 function [xx1, xx2, p1, p2] = projectOntoDirection(X1, X2, direction)
