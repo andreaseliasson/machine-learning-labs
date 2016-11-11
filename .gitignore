@@ -1,3 +1,6 @@
 *.eps
 .DS_Store
 *.m~
+cvx/
+housing.data
+
