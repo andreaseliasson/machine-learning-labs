@@ -31,6 +31,8 @@ xlabel('True House Price', 'FontSize', 14);
 ylabel('Prediction', 'FontSize', 14);
 title(['Linear Regression: ' s], 'FontSize', 14);
 
+print -depsc f4-1.eps;
+
 % Split the data into a training set and a test set, estimate the regression model (w) on the
 % training set and see how training and test errors differ.
 
@@ -49,17 +51,23 @@ fh_test_set = test_set * params_test_set;
 figure(2), clf,
 plot(f(1:N/2, :), fh_training_set, 'b.', 'LineWidth', 2),
 grid on;
+axis([-2 3 -3 3]);
 xlabel('True House Price', 'FontSize', 14);
 ylabel('Prediction (seen data)', 'FontSize', 14);
 title(['Linear Regression: Seen data' s], 'FontSize', 14);
 
+print -depsc f4-2.eps;
+
 % Unseen data
 figure(3), clf,
-plot(f(N/2+1:N, :), fh_test_set, 'g.', 'LineWidth', 2),
+plot(f(N/2+1:N, :), fh_test_set, 'r.', 'LineWidth', 2),
 grid on;
+axis([-2 3 -3 3]);
 xlabel('True House Price', 'FontSize', 14);
 ylabel('Prediction (unseen data)', 'FontSize', 14);
 title(['Linear Regression: Unseen data' s], 'FontSize', 14);
+
+print -depsc f4-3.eps;
 
 % Implement 10-fold cross validation on the data and quantify an average prediction error
 % and an uncertainty on it.
@@ -121,6 +129,8 @@ figure(4),
 boxplot(predictionErrors),
 title(['Box plot of prediction errors' s], 'FontSize', 14);
 
+print -depsc f4-4.eps;
+
 % Regression using the CVX Tool
 % The least squares regression we have done above can be implemented as
 % follows in the cvx tool:
@@ -134,6 +144,10 @@ fh1 = Y * w1;
 % Check if the two methods produce the same results
 figure(5), clf,
 plot(w, w1, 'mx', 'Linewidth', 2);
+xlabel('Pseudo inverse params', 'FontSize', 14);
+ylabel('CVX params', 'FontSize', 14);
+
+print -depsc f4-5.eps;
 
 % It appears as if the two methods produce the same result (parameters in
 % our hypothesis function).
@@ -158,6 +172,8 @@ axis([-2 3 -3 3]);
 xlabel('True House Price', 'FontSize', 14);
 ylabel('Prediction', 'FontSize', 14);
 title('Sparse Regression', 'FontSize', 14);
+
+print -depsc f4-6.eps;
 
 % You can find the non-zero coefficients (parameters) that are not switched
 % off by the regularizer.
@@ -190,3 +206,8 @@ end
 
 figure(7), clf,
 plot(gammaRange, nonZeroCoefficients, 'b', 'Linewidth', 2);
+xlabel('Gamma', 'FontSize', 14);
+ylabel('Number of non-zero coefficients', 'FontSize', 14);
+title('Gamma vs. Non-zero coefficients', 'FontSize', 14);
+
+print -depsc f4-7.eps;
