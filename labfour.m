@@ -121,3 +121,72 @@ figure(4),
 boxplot(predictionErrors),
 title(['Box plot of prediction errors' s], 'FontSize', 14);
 
+% Regression using the CVX Tool
+% The least squares regression we have done above can be implemented as
+% follows in the cvx tool:
+
+cvx_begin quiet
+    variable w1( p+1 );
+    minimize norm( Y*w1 - f );
+cvx_end
+fh1 = Y * w1;
+
+% Check if the two methods produce the same results
+figure(5), clf,
+plot(w, w1, 'mx', 'Linewidth', 2);
+
+% It appears as if the two methods produce the same result (parameters in
+% our hypothesis function).
+
+% Sparse Regression
+
+% Let us now regularize the regression w2 = minw|Yw - f| + gamma * |w|1. We can
+% implement this as follows.
+
+gamma = 8.0;
+cvx_begin quiet
+    variable w2( p+1 );
+    minimize( norm(Y*w2-f) + gamma*norm(w2,1) );
+cvx_end
+
+fh2 = Y * w2;
+
+figure(6), clf,
+plot(f, fh2, 'b.', 'LineWidth', 2);
+grid on;
+axis([-2 3 -3 3]);
+xlabel('True House Price', 'FontSize', 14);
+ylabel('Prediction', 'FontSize', 14);
+title('Sparse Regression', 'FontSize', 14);
+
+% You can find the non-zero coefficients (parameters) that are not switched
+% off by the regularizer.
+
+[isNzero] = find(abs(w2) > 1e-5);
+disp('Relevant variables');
+disp(isNzero);
+
+% I seem to only get 3 relevant variables, 6, 11, 13, indicating 
+% avg number of rooms per dwelling, per value property tax rate per 10,000
+% and lower status of the population, respectively
+
+% Change the paramater gamma over the range 0.01 -> 40 in 100 steps and
+% plot a graph of how the number of non-zero coeficients changes with
+% increasing regularization.
+
+gammaRange = linspace(0.01, 40, 100);
+nonZeroCoefficients = ones(100, 1);
+for ii = 1:100
+    currentGamma = gammaRange(ii);
+    
+    cvx_begin quiet
+        variable w2G( p+1 );
+        minimize( norm(Y*w2G-f) + currentGamma * norm(w2G,1) );
+    cvx_end
+    
+    nonZeros = find(abs(w2G) > 1e-5);
+    nonZeroCoefficients(ii, 1) = size(nonZeros, 1);
+end
+
+figure(7), clf,
+plot(gammaRange, nonZeroCoefficients, 'b', 'Linewidth', 2);
