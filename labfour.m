@@ -64,11 +64,60 @@ title(['Linear Regression: Unseen data' s], 'FontSize', 14);
 % Implement 10-fold cross validation on the data and quantify an average prediction error
 % and an uncertainty on it.
 
-indices = crossvalind('Kfold', N, 10);
-test_set1 = (indices == 1);
-train_set1 = ~test_set1;
-% for jj = 1:10
-%    test_set = (indices == i);
-%    train_set = ~test_set;
-%    
-% end
+predictionErrors = zeros(10, 1);
+modulo = mod(N, 10);
+group = floor(N/10);
+
+for jj = 1:10
+    if (jj == 1)
+        testSet = Y(1:group, :);
+        trainingSet = Y(group:N, :);
+        f10 = f(1:group, :);
+        w10 = inv(trainingSet' * trainingSet) * trainingSet' * f(group:N, :);
+        fh10 = testSet * w10;
+        
+        predictionError = zeros(50, 1);
+        for jjj = 1:50
+            predictionError(jjj, :) = abs(f10(jjj, :) - fh10(jjj, :));
+        end
+        predictionErrors(jj, :) = mean(predictionError);
+
+    elseif (jj ~= 1 && jj ~= 10)
+        testSet = Y(jj * group:jj * group + group, :);
+        trainingSet1 = Y(1:jj * group, :);
+        trainingSet2 = Y(jj * group + group:N, :);
+        trainingSet = [trainingSet1; trainingSet2];
+        % Actual values in training data
+        ff10 = [f(1:jj * group, :); f(jj * group + group:N, :)];
+        % Actual values in test data
+        f10 = f(jj * group:jj * group + group, :);
+        w10 = inv(trainingSet' * trainingSet) * trainingSet' * ff10;
+        fh10 = testSet * w10;
+        
+        predictionError = zeros(50, 1);
+        for jjj = 1:50
+            predictionError(jjj, :) = abs(f10(jjj, :) - fh10(jjj, :));
+        end
+        predictionErrors(jj, :) = mean(predictionError);
+        
+    else
+        testSet = Y((jj - 1) * group: N, :);
+        trainingSet = Y(1:(jj - 1) * group, :);
+        f10 = f((jj - 1) * group:N, :);
+        w10 = inv(trainingSet' * trainingSet) * trainingSet' * f(1:(jj -1) * group);
+        fh10 = testSet * w10;
+        
+        predictionError = zeros(56, 1);
+        for jjj = 1:56
+            predictionError(jjj, :) = abs(f10(jjj, :) - fh10(jjj, :));
+        end
+        predictionErrors(jj, :) = mean(predictionError);
+    end
+end
+
+avgPredictionError = mean(predictionErrors);
+standardDeviationError = std(predictionErrors);
+figure(4),
+boxplot(predictionErrors),
+title(['Box plot of prediction errors' s], 'FontSize', 14);
+
