@@ -84,10 +84,74 @@ axis([-2 3 -1 3]);
 xlabel('Target', 'FontSize', 14);
 ylabel('Prediction', 'FontSize', 14);
 
-
 % 8 Compare your results with the linerar regression model for lab 4. Does
 % the use of a nonlinear model improve predictions?
 
+rbf_prediction_error_means = zeros(20, 1);
+lg_prediction_error_means = zeros(20, 1);
 
+for iter=1:20
+    % Partition into random training and test sets
+    ii = randperm(N);
+    Xtr1 = Y(ii(1:N/2), :);
+    ytr1 = f(ii(1:N/2), :);
 
+    Xts1 = Y(ii(N/2+1:N), :);
+    yts1 = f(ii(N/2+1:N), :);
+    
+    % Train on training set
+    % Construct design matrix
 
+    A1 = ones(Ntr, K);
+
+    for i=1:Ntr
+         for j=1:K
+            A1(i, j) = exp(-norm(Xtr1(i,:) - C(j,:)) / sig^2);
+         end
+    end
+    
+    % Solve for the paramaters (weights) using pseudo inverse
+    lambda1 = A1 \ ytr1;
+    
+    % Evaluate test set prediction
+    B1 = ones(Ntr, K);
+
+    for i=1:Ntr
+         for j=1:K
+            B1(i, j) = exp(-norm(Xts1(i,:) - C(j,:)) / sig^2);
+         end
+    end
+
+    test_set_predictions = B1 * lambda1;
+    
+    test_set_prediction_errors = zeros(Ntr, 1);
+    
+    for jj=1:Ntr
+        test_set_prediction_errors(jj) = abs(yts1(jj) - test_set_predictions(jj));
+    end
+
+    rbf_prediction_error_means(iter) = mean(test_set_prediction_errors);
+    
+    % Linear regression model
+    
+    % solve for paramaters (weights)
+    
+    lg_params = Xtr1 \ ytr1;
+    
+    % fit model on test set
+    
+    lg_predictions = Xts1 * lg_params;
+    lg_prediction_errors = zeros(Ntr, 1);
+    
+    for jj2=1:Ntr
+       lg_prediction_errors(jj2) = abs(yts1(jj2) - lg_predictions(jj2)); 
+    end
+    
+    lg_prediction_error_means(iter) = mean(lg_prediction_errors);
+end
+
+% Plot boxplots
+figure(3),
+boxplot([lg_prediction_error_means rbf_prediction_error_means], 'Labels', {'Linear', 'RBF'}),
+ylabel('Mean Squared Difference prediction error', 'FontSize', 14);
+title('Prediction errors: Linear vs RBF', 'FontSize', 14);
