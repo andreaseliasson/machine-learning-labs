@@ -32,6 +32,7 @@ sig = norm(Xtr(ceil(rand*Ntr),:) - Xtr(ceil(rand*Ntr),:));
 % 3 Perform K-means clustering to find centres for the basis functions. Use
 % K = Ntr / 10
 K = round(Ntr/10);
+% K = 15;
 [idx, C] = kmeans(Xtr, K);
 
 % 4 Construct the design matrix
@@ -61,16 +62,31 @@ end
 figure(1), clf,
 plot(ytr, yh, 'rx', 'LineWidth', 2), grid on,
 title('RBF Prediction on Training Data', 'FontSize', 16);
+axis([-2 3 -1 3]);
 xlabel('Target', 'FontSize', 14);
 ylabel('Prediction', 'FontSize', 14);
 
-% 7 Compare to unseen data
+% 7 What does the model predict at each point in the test set?
+yhUnSeen = zeros(Ntr, 1);
+uts = zeros(1, K);
+
+for n=1:Ntr
+   for j=1:K
+      uts(j) = exp(-norm(Xts(n,:) - C(j,:)) / sig^2);
+   end
+   yhUnSeen(n) = uts(1,:) * lambda;
+end
+
 figure(2), clf,
-plot(yts, yh, 'bx', 'LineWidth', 2), grid on,
+plot(yts, yhUnSeen, 'bx', 'LineWidth', 2), grid on,
 title('RBF Prediction on Unseen Data', 'FontSize', 16);
+axis([-2 3 -1 3]);
 xlabel('Target', 'FontSize', 14);
 ylabel('Prediction', 'FontSize', 14);
 
+
+% 8 Compare your results with the linerar regression model for lab 4. Does
+% the use of a nonlinear model improve predictions?
 
 
 
