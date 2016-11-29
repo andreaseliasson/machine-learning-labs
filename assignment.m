@@ -58,3 +58,22 @@ net = train(net, X, y);
 view(net);
 output = net(X);
 
+NP1 = zeros(numGrid, numGrid);
+
+for i=1:numGrid
+    for j=1:numGrid
+        x = [yRange(j) xRange(i)]';
+        nnp = net(x);
+        NP1(i,j) = nnp(1);
+    end
+end
+
+NPmax = max(max(NP1));
+figure(3), clf, contour(xRange, yRange, NP1, [0 0.5*NPmax], 'LineWidth', 2);
+hold on;
+plot(m1(1), m1(2), 'b*', 'LineWidth', 4);
+plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
+
+hold on;
+plot(X1(:, 1), X1(:, 2), 'bx', X2(:, 1), X2(:, 2), 'ro');
+grid on;
