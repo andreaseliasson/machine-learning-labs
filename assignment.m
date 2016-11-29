@@ -42,3 +42,19 @@ grid on;
 % Draw the posterior probability as a three dimensional graph
 figure(2)
 mesh(xRange, yRange, P1./(P1+P2));
+
+% Using the data sampled from each of the distributions, train a
+% feedforward nural network using the Neural Networks toolbox. 
+
+X = [X1; X2]';
+N1 = size(X1, 1);
+N2 = size(X2, 1);
+y1 = [ones(N1, 1) zeros(N2, 1)]';
+y2 = [zeros(N2, 1) ones(N1, 1)]';
+y = [y1 y2];
+
+net = patternnet(20);
+net = train(net, X, y);
+view(net);
+output = net(X);
+
