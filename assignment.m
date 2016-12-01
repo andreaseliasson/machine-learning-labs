@@ -46,7 +46,7 @@ mesh(xRange, yRange, P1./(P1+P2));
 % Using the data sampled from each of the distributions, train a
 % feedforward nural network using the Neural Networks toolbox. 
 
-X = [X1; X2]';
+XNN = [X1; X2]';
 N1 = size(X1, 1);
 N2 = size(X2, 1);
 y1 = [ones(N1, 1) zeros(N2, 1)]';
@@ -54,9 +54,9 @@ y2 = [zeros(N2, 1) ones(N1, 1)]';
 y = [y1 y2];
 
 net = patternnet(20);
-net = train(net, X, y);
+net = train(net, XNN, y);
 view(net);
-output = net(X);
+output = net(XNN);
 
 NP1 = zeros(numGrid, numGrid);
 
@@ -77,3 +77,26 @@ plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
 hold on;
 plot(X1(:, 1), X1(:, 2), 'bx', X2(:, 1), X2(:, 2), 'ro');
 grid on;
+
+% Time series prediction
+% Formulated as a regression problem.
+
+Ttr = T(1:1500, 1);
+Tts = T(1500 + 1: size(T, 1));
+NTtr = size(Ttr, 1);
+p = 20;
+
+ytr = X(p+1:NTtr, 1);
+
+D = ones(NTtr - p, p + 1);
+
+for i=1:NTtr - p
+   n = (p + 1) + (i - 1);
+   for j=1:p
+      % We might want to change this to use the actual ouptuts from
+      % the previous time series. 
+      D(i, j) = T(n - j, 1);
+   end
+end
+
+w = D \ ytr;
