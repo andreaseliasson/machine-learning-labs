@@ -60,35 +60,44 @@ output = net(XNN);
 
 NP1 = zeros(numGrid, numGrid);
 
-for i=1:numGrid
-    for j=1:numGrid
-        x = [yRange(j) xRange(i)]';
-        nnp = net(x);
-        NP1(i,j) = nnp(1);
-    end
-end
+% ---------- can be uncommented -----------
 
-NPmax = max(max(NP1));
-figure(3), clf, contour(xRange, yRange, NP1, [0 0.5*NPmax], 'LineWidth', 2);
-hold on;
-plot(m1(1), m1(2), 'b*', 'LineWidth', 4);
-plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
+% for i=1:numGrid
+%     for j=1:numGrid
+%         x = [yRange(j) xRange(i)]';
+%         nnp = net(x);
+%         NP1(i,j) = nnp(1);
+%     end
+% end
+% 
+% NPmax = max(max(NP1));
+% figure(3), clf, contour(xRange, yRange, NP1, [0 0.5*NPmax], 'LineWidth', 2);
+% hold on;
+% plot(m1(1), m1(2), 'b*', 'LineWidth', 4);
+% plot(m2(1), m2(2), 'r*', 'LineWidth', 4);
+% 
+% hold on;
+% plot(X1(:, 1), X1(:, 2), 'bx', X2(:, 1), X2(:, 2), 'ro');
+% grid on;
 
-hold on;
-plot(X1(:, 1), X1(:, 2), 'bx', X2(:, 1), X2(:, 2), 'ro');
-grid on;
+% ---------------------- Can be uncommented ------------------------
 
+
+% ------------------------ Time series prediction --------------------
 % Time series prediction
 % Formulated as a regression problem.
 
 Ttr = T(1:1500, 1);
 Tts = T(1500 + 1: size(T, 1));
 NTtr = size(Ttr, 1);
+NTts = size(Tts, 1);
 p = 20;
 
+ytr1 = X(1:1500, 1);
 ytr = X(p+1:NTtr, 1);
+yts = X(1500+p+1:2001, 1);
 
-D = ones(NTtr - p, p + 1);
+D = ones(NTtr - p, p);
 
 for i=1:NTtr - p
    n = (p + 1) + (i - 1);
@@ -99,5 +108,36 @@ for i=1:NTtr - p
    end
 end
 
+% D = [ones(NTtr - p, 1) D];
+
 w = D \ ytr;
 fts = D * w;
+
+% figure
+% plot(Ttr, ytr1);
+% % set(gca,'xlim',[0, Ttr(end)]);
+% xlabel('t');
+% ylabel('x(t)');
+% title(sprintf('A Mackey-Glass time serie (tau=%d)', tau));
+
+figure;
+plot(Ttr(p+1:NTtr, 1), fts);
+figure;
+plot(Ttr(p+1:NTtr, 1), ytr);
+
+% Test data
+D2 = ones(NTts - p, p);
+
+for i=1:NTts - p
+   n = (p + 1) + (i - 1);
+   for j=1:p 
+      D2(i, j) = X((1500 + n) - j, 1);
+   end
+end
+
+fts2 = D2 * w;
+
+net2 = feedforwardnet(20);
+net2 = train(net2, D', ytr');
+view(net2);
+output2 = net2(D');
