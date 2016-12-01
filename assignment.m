@@ -95,8 +95,9 @@ for i=1:NTtr - p
    for j=1:p
       % We might want to change this to use the actual ouptuts from
       % the previous time series. 
-      D(i, j) = T(n - j, 1);
+      D(i, j) = X(n - j, 1);
    end
 end
 
 w = D \ ytr;
+fts = D * w;
