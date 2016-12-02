@@ -120,10 +120,10 @@ fts = D * w;
 % ylabel('x(t)');
 % title(sprintf('A Mackey-Glass time serie (tau=%d)', tau));
 
+figure(10);
+plot(Ttr(p+1:NTtr, 1), fts, Ttr(p+1:NTtr, 1), ytr);
 figure;
-plot(Ttr(p+1:NTtr, 1), fts);
-figure;
-plot(Ttr(p+1:NTtr, 1), ytr);
+% plot(Ttr(p+1:NTtr, 1), ytr);
 
 % Test data
 D2 = ones(NTts - p, p);
@@ -141,3 +141,19 @@ net2 = feedforwardnet(20);
 net2 = train(net2, D', ytr');
 view(net2);
 output2 = net2(D');
+
+figure(11);
+plot(Ttr(p+1:NTtr, 1), output2, Ttr(p+1:NTtr, 1), ytr);
+
+% Iterate through the number of test data, and append a new row using the
+% predicted value from the previous row as the first input into the new
+% row. Repeat for number of test data times. Plot the predicted values
+% against the test set output values.
+
+long_term_prediction_design_matrix = ones(size(NTts, 1), p);
+long_term_prediction = ones(size(NTts), 1);
+for i=1:size(NTts, 1)
+    if (i == 1)
+        predictied_value_of_previous_row = net2(D(size(D, 1)'));
+    end
+end
