@@ -157,7 +157,7 @@ predicted_value_of_row = ones(NTts, 1);
 for i=1:NTts
     if (i == 1)
         for j=1:p
-            long_term_prediction_design_matrix(i, j) = ytr(size(ytr, 1)+1-j);
+            long_term_prediction_design_matrix(i, j) = fts(size(fts, 1)+1-j);
         end
         predicted_value_of_row(i) = net2(long_term_prediction_design_matrix(i, :)');
     end
@@ -174,4 +174,18 @@ for i=1:NTts
 end
 
 figure(12);
-plot(T(p+1:size(T, 1), 1), [ytr; predicted_value_of_row])
+plot(T(p+1:size(T, 1), 1), [fts; predicted_value_of_row]);
+
+total_predictions = [fts; predicted_value_of_row];
+pr_errors = ones(size(T, 1) - p, 1);
+
+yts_all = X(1500:size(X, 1), 1);
+f_output = [ytr; yts_all];
+for i=1:size(total_predictions, 1)
+    pr_errors(i) = total_predictions(i) - f_output(i);
+end
+
+
+% Plot prediction errors
+figure(13)
+plot(T(p+1:size(T, 1), 1), pr_errors);
