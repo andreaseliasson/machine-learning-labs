@@ -88,7 +88,7 @@ NP1 = zeros(numGrid, numGrid);
 % Formulated as a regression problem.
 
 Ttr = T(1:1500, 1);
-Tts = T(1500 + 1: size(T, 1));
+Tts = T(1500 + 1: size(T, 1), 1);
 NTtr = size(Ttr, 1);
 NTts = size(Tts, 1);
 p = 20;
@@ -150,10 +150,28 @@ plot(Ttr(p+1:NTtr, 1), output2, Ttr(p+1:NTtr, 1), ytr);
 % row. Repeat for number of test data times. Plot the predicted values
 % against the test set output values.
 
-long_term_prediction_design_matrix = ones(size(NTts, 1), p);
-long_term_prediction = ones(size(NTts), 1);
-for i=1:size(NTts, 1)
+long_term_prediction_design_matrix = ones(NTts, p);
+long_term_prediction = ones(NTts, 1);
+predicted_value_of_row = ones(NTts, 1);
+% predictied_value_of_previous_row = net2(D(size(D, 1), :)');
+for i=1:NTts
     if (i == 1)
-        predictied_value_of_previous_row = net2(D(size(D, 1)'));
+        for j=1:p
+            long_term_prediction_design_matrix(i, j) = ytr(size(ytr, 1)+1-j);
+        end
+        predicted_value_of_row(i) = net2(long_term_prediction_design_matrix(i, :)');
+    end
+    if (i > 1)
+        for j=1:p
+            if (j == 1)
+                long_term_prediction_design_matrix(i, j) = predicted_value_of_row(i-1);
+            else
+                long_term_prediction_design_matrix(i, j) = long_term_prediction_design_matrix(i-1,j-1);
+            end
+        end
+        predicted_value_of_row(i) = net2(long_term_prediction_design_matrix(i, :)');
     end
 end
+
+figure(12);
+plot(T(p+1:size(T, 1), 1), [ytr; predicted_value_of_row])
