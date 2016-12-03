@@ -25,6 +25,46 @@ net = train(net, design_matrix', actual_values_to_design_matrix');
 view(net);
 predicted_values = net(design_matrix');
 
-figure(14)
-plot([1:size(design_matrix, 1)]', predicted_values,[1:size(design_matrix, 1)]', actual_values_to_design_matrix);
+figure(20)
+plot([1:size(design_matrix, 1)]', predicted_values,[1:size(design_matrix, 1)]', actual_values_to_design_matrix),
+title('Predicted and Actual Index Values', 'FontSize', 14);
+print -depsc fa-11.eps;
 
+% Split into training and test sets
+
+training_set = closing_index(1:900, 1);
+training_set_outputs = closing_index(1:900, 1);
+
+test_set = closing_index(900 + 1:size(closing_index, 1), 1);
+test_set_outputs = closing_index(900 + 1: size(closing_index, 1), 1);
+
+training_set_design_matrix = ones(size(training_set, 1) - p, p);
+training_set_design_matrix_outputs = closing_index(p + 1:900, 1);
+
+for i=1:size(training_set_design_matrix, 1)
+    n = (p + 1) + (i - 1);
+    for j=1:p 
+      training_set_design_matrix(i, j) = closing_index(n - j, 1);
+    end
+end
+
+% Construct test set design matrix
+test_set_design_matrix = ones(size(test_set, 1) - p, p);
+test_set_design_matrix_outputs = closing_index(900 + p + 1:size(closing_index), 1);
+
+for i=1:size(test_set_design_matrix, 1)
+   n = (p + 1) + (i - 1);
+   for j=1:p 
+      test_set_design_matrix(i, j) = closing_index((900 + n) - j, 1);
+   end
+end
+
+net = feedforwardnet(20);
+net = train(net, training_set_design_matrix', training_set_design_matrix_outputs');
+view(net);
+test_set_predicted_values = net(test_set_design_matrix')';
+
+figure(21),
+plot([1:size(test_set_predicted_values, 1)]', test_set_design_matrix_outputs, [1:size(test_set_predicted_values, 1)]', test_set_predicted_values);
+title('Nueral Net on unseen data (test set)', 'FontSize', 14);
+print -depsc fa-12.eps;
