@@ -6,6 +6,7 @@ closing_index = FinanceData(:, 5);
 N_closing_index = size(closing_index, 1);
 
 % Predict tomorrow's index value from past 20 trading days.
+p = 20;
 
 % Construct our design matrix
 design_matrix = ones(N_closing_index - p, p);
@@ -68,3 +69,41 @@ figure(21),
 plot([1:size(test_set_predicted_values, 1)]', test_set_design_matrix_outputs, [1:size(test_set_predicted_values, 1)]', test_set_predicted_values);
 title('Nueral Net on unseen data (test set)', 'FontSize', 14);
 print -depsc fa-12.eps;
+
+% Long term iterated prediction
+
+number_of_iterations = 20;
+
+long_term_design_matrix = ones(number_of_iterations, p);
+
+predicted_value_of_row = ones(number_of_iterations, 1);
+
+test_set_n_outputs = test_set_outputs(1:number_of_iterations, 1);
+
+for i=1:number_of_iterations
+    if (i == 1)
+        for j=1:p
+            long_term_design_matrix(i, j) = training_set_design_matrix_outputs(size(training_set_design_matrix, 1)+1-j);
+        end
+        predicted_value_of_row(i) = net(long_term_design_matrix(i, :)');
+    end
+    if (i > 1)
+        for j=1:p
+            if (j == 1)
+                long_term_design_matrix(i, j) = predicted_value_of_row(i-1);
+            else
+                long_term_design_matrix(i, j) = long_term_design_matrix(i-1,j-1);
+            end
+        end
+        predicted_value_of_row(i) = net(long_term_design_matrix(i, :)');
+    end
+end
+
+figure(22),
+plot([1:number_of_iterations]', test_set_n_outputs, [1:number_of_iterations]', predicted_value_of_row),
+legend('actual index values','predicted index values'),
+title('Long term iterated prediction', 'FontSize', 14);
+
+% Include past values of volume traded
+
+
