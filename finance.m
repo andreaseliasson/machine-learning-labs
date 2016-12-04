@@ -64,6 +64,7 @@ net = feedforwardnet(20);
 net = train(net, training_set_design_matrix', training_set_design_matrix_outputs');
 view(net);
 test_set_predicted_values = net(test_set_design_matrix')';
+training_set_predicted_values = net(training_set_design_matrix')';
 
 figure(21),
 plot([1:size(test_set_predicted_values, 1)]', test_set_design_matrix_outputs, [1:size(test_set_predicted_values, 1)]', test_set_predicted_values);
@@ -72,7 +73,7 @@ print -depsc fa-12.eps;
 
 % Long term iterated prediction
 
-number_of_iterations = 20;
+number_of_iterations = 100;
 
 long_term_design_matrix = ones(number_of_iterations, p);
 
@@ -83,7 +84,7 @@ test_set_n_outputs = test_set_outputs(1:number_of_iterations, 1);
 for i=1:number_of_iterations
     if (i == 1)
         for j=1:p
-            long_term_design_matrix(i, j) = training_set_design_matrix_outputs(size(training_set_design_matrix, 1)+1-j);
+            long_term_design_matrix(i, j) = training_set_predicted_values(size(training_set_predicted_values, 1)+1-j);
         end
         predicted_value_of_row(i) = net(long_term_design_matrix(i, :)');
     end
@@ -103,14 +104,15 @@ figure(22),
 plot([1:number_of_iterations]', test_set_n_outputs, [1:number_of_iterations]', predicted_value_of_row),
 legend('actual index values','predicted index values'),
 title('Long term iterated prediction', 'FontSize', 14);
+print -depsc fa-14.eps;
 
 % Include past values of volume traded
 volume_traded = FinanceData(:, 6);
 
-% Construct new design matrix with volume trades as additional input
+% Construct new trainig set design matrix with volume trades as additional input
 p = 40;
-training_set_design_matrix = ones(size(training_set, 1) - p, p);
-training_set_design_matrix_outputs = closing_index(p + 1:900, 1);
+training_set_design_matrix = ones(size(training_set, 1) - p/2, p);
+training_set_design_matrix_outputs = closing_index(p/2 + 1:900, 1);
 
 for i=1:size(training_set_design_matrix, 1)
     n = (p/2 + 1) + (i - 1);
@@ -124,6 +126,71 @@ for i=1:size(training_set_design_matrix, 1)
     end
 end
 
-% Train our neural network with our new design matrix
+% Construct a new test set design matrix with volumes traded as additional
+% input
+
+test_set_design_matrix = ones(size(test_set, 1) - p/2, p);
+test_set_design_matrix_outputs = closing_index(900 + (p/2) + 1:size(closing_index), 1);
+
+for i=1:size(test_set_design_matrix, 1)
+    n = (p/2 + 1) + (i - 1);
+    for j=1:p/2 
+      test_set_design_matrix(i, j) = closing_index((900 + n) - j, 1);
+    end
+    
+    n = (p/2 + 1) + (i - 1);
+    for j=p/2+1:p 
+      test_set_design_matrix(i, j) = volume_traded((900 + n) - (j - (p/2)), 1);
+    end
+end
+
+% Train our neural network with our new training set design matrix
+
+net = feedforwardnet(20);
+net = train(net, training_set_design_matrix', training_set_design_matrix_outputs');
+view(net);
+test_set_predicted_values = net(test_set_design_matrix')';
+training_set_predicted_values = net(training_set_design_matrix')';
+
+figure(23),
+plot([1:size(test_set_predicted_values, 1)]', test_set_design_matrix_outputs, [1:size(test_set_predicted_values, 1)]', test_set_predicted_values),
+title('Neural Net Predictions with Volume Traded Included on Unseen Data', 'FontSize', 14),
+legend('actual index values', 'predicted index values');
+print -depsc fa-13.eps;
 
 
+% ----------------- Long term iterated prediction ------------------------
+
+% Long term iterated prediction
+
+number_of_iterations = 10;
+
+long_term_design_matrix = ones(number_of_iterations, p);
+
+predicted_value_of_row = ones(number_of_iterations, 1);
+
+test_set_n_outputs = test_set_outputs(1:number_of_iterations, 1);
+
+for i=1:number_of_iterations
+    if (i == 1)
+        for j=1:p
+            long_term_design_matrix(i, j) = training_set_predicted_values(size(training_set_predicted_values, 1)+1-j);
+        end
+        predicted_value_of_row(i) = net(long_term_design_matrix(i, :)');
+    end
+    if (i > 1)
+        for j=1:p
+            if (j == 1)
+                long_term_design_matrix(i, j) = predicted_value_of_row(i-1);
+            else
+                long_term_design_matrix(i, j) = long_term_design_matrix(i-1,j-1);
+            end
+        end
+        predicted_value_of_row(i) = net(long_term_design_matrix(i, :)');
+    end
+end
+
+figure(24),
+plot([1:number_of_iterations]', test_set_n_outputs, [1:number_of_iterations]', predicted_value_of_row),
+legend('actual index values','predicted index values'),
+title('Long term iterated prediction (with volume traded included)', 'FontSize', 14);
