@@ -105,5 +105,25 @@ legend('actual index values','predicted index values'),
 title('Long term iterated prediction', 'FontSize', 14);
 
 % Include past values of volume traded
+volume_traded = FinanceData(:, 6);
+
+% Construct new design matrix with volume trades as additional input
+p = 40;
+training_set_design_matrix = ones(size(training_set, 1) - p, p);
+training_set_design_matrix_outputs = closing_index(p + 1:900, 1);
+
+for i=1:size(training_set_design_matrix, 1)
+    n = (p/2 + 1) + (i - 1);
+    for j=1:p/2 
+      training_set_design_matrix(i, j) = closing_index(n - j, 1);
+    end
+    
+    n = (p/2 + 1) + (i - 1);
+    for j=p/2+1:p 
+      training_set_design_matrix(i, j) = volume_traded(n - (j - (p/2)), 1);
+    end
+end
+
+% Train our neural network with our new design matrix
 
 
